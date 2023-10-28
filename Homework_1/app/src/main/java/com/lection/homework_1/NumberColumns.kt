@@ -52,7 +52,7 @@ fun NumberListShow(numbers: SnapshotStateList<Int>, columnCount: Int) {
 }
 
 @Composable
-fun AddNumberButton(numbers: SnapshotStateList<Int>) {
+fun AddNumberButton(numbers: SnapshotStateList<Int>, button_name: String) {
     Column {
         Button(
             onClick = {
@@ -62,7 +62,7 @@ fun AddNumberButton(numbers: SnapshotStateList<Int>) {
                 .align(Alignment.CenterHorizontally)
                 .padding(16.dp)
         ) {
-            Text(text = "Add Number")
+            Text(text = button_name)
         }
     }
 }

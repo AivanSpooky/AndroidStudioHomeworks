@@ -28,7 +28,7 @@ class MainActivity : AppCompatActivity() {
                             NumberListShow(numbers = numbers, columnCount = columnCount)
                         }
                         item{
-                            AddNumberButton(numbers = numbers)
+                            AddNumberButton(numbers = numbers, getString(R.string.button_name))
                         }
                     }
                 }
