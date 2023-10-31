@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -16,15 +13,15 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun NumberListShow(numbers: List<Int>, columnCount: Int) {
-    Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+    Column( horizontalAlignment = Alignment.CenterHorizontally) {
         numbers.chunked(columnCount).forEach { rowNumbers ->
             Row(modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.CenterHorizontally),
+                .align(Alignment.Start)
             ) {
                 rowNumbers.forEach { number ->
                     val backgroundColor = if (number % 2 == 0) Color.Red else Color.Blue
@@ -33,7 +30,6 @@ fun NumberListShow(numbers: List<Int>, columnCount: Int) {
                             .size(100.dp)
                             .padding(4.dp)
                             .background(backgroundColor)
-                            .fillMaxHeight()
                     ) {
                         Text(
                             text = number.toString(),
@@ -46,6 +42,16 @@ fun NumberListShow(numbers: List<Int>, columnCount: Int) {
         }
     }
 }
+
+@Preview
+@Composable
+fun NumberListShowPreview() {
+    val numbers = listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    val columnCount = 3
+
+    NumberListShow(numbers, columnCount)
+}
+
 
 @Composable
 fun AddNumberButton(numbers: SnapshotStateList<Int>, button_name: String) {
