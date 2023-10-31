@@ -62,19 +62,3 @@ fun AddNumberButton(numbers: SnapshotStateList<Int>, button_name: String) {
         }
     }
 }
-
-//@Preview(showBackground = true)
-//@Composable
-//fun DefaultPreview() {
-//    Homework_1Theme {
-//        val numbers = remember { mutableStateListOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10) }
-//        val columnCount = if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) 3 else 4
-//
-//        Surface(modifier = Modifier.fillMaxSize()) {
-//            Column(Modifier.fillMaxSize()) {
-//                NumberListShow(numbers = numbers, columnCount = columnCount)
-//                AddNumberButton(numbers = numbers)
-//            }
-//        }
-//    }
-//}
