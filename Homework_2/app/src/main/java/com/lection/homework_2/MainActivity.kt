@@ -34,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,11 +55,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 
+
+
 class MainActivity : ComponentActivity() {
     private val viewModel: MyViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        var recompose = viewModel.recompose
         setContent {
             Homework_2Theme {
                 // A surface container using the 'background' color from the theme
@@ -66,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    ImageListScreen(recompose)
+                    ImageListScreen(viewModel = viewModel)
                 }
             }
         }
@@ -74,27 +76,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ImageListScreen(recompose: MutableState<Int>) {
+fun ImageListScreen(viewModel: MyViewModel) {
     // Загрузка данных из API
-    var imageList by remember { mutableStateOf<List<BeerData>?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
-    var isError by remember { mutableStateOf(false) }
-    var hasLoaded by remember { mutableStateOf(false) }
+//    var imageList by remember { mutableStateOf<List<BeerData>?>(null) }
+//    var isLoading by remember { mutableStateOf(false) }
+//    var isError by remember { mutableStateOf(false) }
+//    var hasLoaded by remember { mutableStateOf(false) }
+    var imageList: List<BeerData>? by rememberSaveable { mutableStateOf(viewModel.imageList.value) }
+    var isLoading: Boolean by rememberSaveable { mutableStateOf(viewModel.isLoading.value) }
+    var isError: Boolean by rememberSaveable { mutableStateOf(viewModel.isError.value) }
+    var hasLoaded: Boolean by rememberSaveable { mutableStateOf(viewModel.hasLoaded.value) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(key1 = hasLoaded) {
         if (!hasLoaded && !isLoading && !isError) {
             isLoading = true
             try {
+                println("READING BERRS XDD")
                 val result = withContext(Dispatchers.IO) {
                     loadDataFromApi()
                 }
                 imageList = result
-                recompose.value += 1
             } catch (e: PunkApiException) {
                 isError = true
                 isLoading = false
                 imageList = null
-                recompose.value += 1
             } finally {
                 isLoading = false
                 hasLoaded = true
@@ -105,9 +110,7 @@ fun ImageListScreen(recompose: MutableState<Int>) {
     // Отображение кнопки для повторной загрузки
     if (isError) {
         IconButton(onClick = {
-            isError = false
-            hasLoaded = false
-            recompose.value += 1
+            viewModel.resetState()
         }) {
             Icon(Icons.Default.Refresh, contentDescription = "Retry")
         }
@@ -115,7 +118,7 @@ fun ImageListScreen(recompose: MutableState<Int>) {
         // Отображение экрана с изображениями
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
         ) {
             if (imageList == null) {
                 CircularProgressIndicator()
