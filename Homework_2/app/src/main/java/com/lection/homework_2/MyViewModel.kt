@@ -24,25 +24,28 @@ class MyViewModel : ViewModel() {
     private val _hasLoaded = mutableStateOf(false)
     val hasLoaded: State<Boolean> = _hasLoaded
 
-    fun loadImageList() {
-        if (!hasLoaded.value && !isLoading.value && !isError.value) {
-            _isLoading.value = true
-            viewModelScope.launch {
-                try {
-                    val result = withContext(Dispatchers.IO) {
-                        loadDataFromApi()
-                    }
-                    _imageList.value = result
-                } catch (e: PunkApiException) {
-                    _isError.value = true
-                    _imageList.value = null
-                } finally {
-                    _isLoading.value = false
-                    _hasLoaded.value = true
-                }
-            }
-        }
-    }
+    private val _screenValue = mutableStateOf<Int>(0)
+    var screenValue: State<Int> = _screenValue
+
+//    fun loadImageList() {
+//        if (!hasLoaded.value && !isLoading.value && !isError.value) {
+//            _isLoading.value = true
+//            viewModelScope.launch {
+//                try {
+//                    val result = withContext(Dispatchers.IO) {
+//                        loadDataFromApi()
+//                    }
+//                    _imageList.value = result
+//                } catch (e: PunkApiException) {
+//                    _isError.value = true
+//                    _imageList.value = null
+//                } finally {
+//                    _isLoading.value = false
+//                    _hasLoaded.value = true
+//                }
+//            }
+//        }
+//    }
 
     fun resetState() {
         _imageList.value = null

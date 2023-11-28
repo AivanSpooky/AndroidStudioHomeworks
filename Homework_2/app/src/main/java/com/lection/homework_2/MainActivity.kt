@@ -1,8 +1,5 @@
 package com.lection.homework_2
 
-import android.content.Context
-import android.net.ConnectivityManager
-import android.net.Network
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,12 +11,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -27,29 +24,18 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.StateObject
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.google.firebase.inappmessaging.model.ImageData
 import com.lection.homework_2.ui.theme.Homework_2Theme
-import retrofit2.Response
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.http.GET
-import retrofit2.http.Query
-import java.io.IOException
 import coil.compose.rememberImagePainter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -87,6 +73,8 @@ fun ImageListScreen(viewModel: MyViewModel) {
     var isError: Boolean by rememberSaveable { mutableStateOf(viewModel.isError.value) }
     var hasLoaded: Boolean by rememberSaveable { mutableStateOf(viewModel.hasLoaded.value) }
 
+    var screenValue: Int by rememberSaveable { mutableStateOf(viewModel.screenValue.value) }
+
     LaunchedEffect(key1 = hasLoaded) {
         if (!hasLoaded && !isLoading && !isError) {
             isLoading = true
@@ -110,11 +98,14 @@ fun ImageListScreen(viewModel: MyViewModel) {
     // Отображение кнопки для повторной загрузки
     if (isError) {
         IconButton(onClick = {
-            viewModel.resetState()
+//            viewModel.resetState()
+            isError = false
+            hasLoaded = false
         }) {
             Icon(Icons.Default.Refresh, contentDescription = "Retry")
         }
-    } else {
+    }
+    if (screenValue == 0) {
         // Отображение экрана с изображениями
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -123,36 +114,82 @@ fun ImageListScreen(viewModel: MyViewModel) {
             if (imageList == null) {
                 CircularProgressIndicator()
             } else {
-                ImageList(imageList = imageList!!)
+                ImageList(imageList = imageList!!, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue })
+            }
+        }
+    }
+    else {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            ImageList(imageList = imageList!!, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue })
+        }
+    }
+}
+
+@Composable
+fun ImageList(imageList: List<BeerData>, screenValue: Int, OnClick: (Int) -> Unit) {
+    LazyColumn {
+        items(imageList) { beerData ->
+            ImageItem(beerData = beerData, screenValue = screenValue, OnClick = OnClick)
+        }
+    }
+}
+
+@Composable
+fun ImageItem(beerData: BeerData, screenValue: Int, OnClick: (Int) -> Unit) {
+    val painter = rememberImagePainter(beerData.image_url)
+    if (screenValue == 0 || (screenValue != 0 && beerData.id == screenValue)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .padding(8.dp)
+                .border(1.dp, Color.Black, CircleShape)
+                .clickable { OnClick(beerData.id) }
+        ) {
+            Image(
+                painter = painter,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Fit
+            )
+            if (screenValue != 0) {
+                IconButton(
+                    onClick = { OnClick(0) },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
             }
         }
     }
 }
 
-@Composable
-fun ImageList(imageList: List<BeerData>) {
-    LazyColumn {
-        items(imageList) { beerData ->
-            ImageItem(beerData = beerData)
-        }
-    }
-}
-
-@Composable
-fun ImageItem(beerData: BeerData) {
-    val painter = rememberImagePainter(beerData.image_url)
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .padding(8.dp)
-            .border(1.dp, Color.Black, CircleShape)
-    ) {
-        Image(
-            painter = painter,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Fit
-        )
-    }
-}
+//@Composable
+//fun BeerInfoScreen() {
+//    val painter = rememberImagePainter(beerData.image_url)
+////    BackHandler {
+////
+////    }
+//    Box(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .aspectRatio(1f)
+//            .padding(8.dp)
+//            .border(1.dp, Color.Black, CircleShape)
+//    ) {
+//        Image(
+//            painter = painter,
+//            contentDescription = null,
+//            modifier = Modifier.fillMaxSize(),
+//            contentScale = ContentScale.Fit
+//        )
+////        IconButton(onClick = { /*TODO*/ }) {
+////            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+////        }
+//    }
+//}
