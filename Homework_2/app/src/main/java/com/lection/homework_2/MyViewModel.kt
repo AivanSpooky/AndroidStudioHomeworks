@@ -11,6 +11,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+enum class State {
+    SINGLE, LIST
+}
+typealias ScreenState = com.lection.homework_2.State
+
 class MyViewModel : ViewModel() {
     private val _imageList = mutableStateOf<List<BeerData>?>(null)
     val imageList: State<List<BeerData>?> = _imageList
@@ -24,8 +29,11 @@ class MyViewModel : ViewModel() {
     private val _hasLoaded = mutableStateOf(false)
     val hasLoaded: State<Boolean> = _hasLoaded
 
-    private val _screenValue = mutableStateOf<Int>(0)
-    var screenValue: State<Int> = _screenValue
+    private val _screenValue = mutableStateOf<ScreenState>(ScreenState.LIST)
+    var screenValue: State<ScreenState> = _screenValue
+
+    private val _chosenId = mutableStateOf<Int>(0)
+    var chosenId: State<Int> = _chosenId
 
 //    fun loadImageList() {
 //        if (!hasLoaded.value && !isLoading.value && !isError.value) {

@@ -73,7 +73,8 @@ fun ImageListScreen(viewModel: MyViewModel) {
     var isError: Boolean by rememberSaveable { mutableStateOf(viewModel.isError.value) }
     var hasLoaded: Boolean by rememberSaveable { mutableStateOf(viewModel.hasLoaded.value) }
 
-    var screenValue: Int by rememberSaveable { mutableStateOf(viewModel.screenValue.value) }
+    var screenValue: ScreenState by rememberSaveable { mutableStateOf(viewModel.screenValue.value) }
+    var chosenId: Int by rememberSaveable { mutableStateOf(viewModel.chosenId.value) }
 
     LaunchedEffect(key1 = hasLoaded) {
         if (!hasLoaded && !isLoading && !isError) {
@@ -105,7 +106,7 @@ fun ImageListScreen(viewModel: MyViewModel) {
             Icon(Icons.Default.Refresh, contentDescription = "Retry")
         }
     }
-    if (screenValue == 0) {
+    if (screenValue == State.LIST) {
         // Отображение экрана с изображениями
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -114,7 +115,7 @@ fun ImageListScreen(viewModel: MyViewModel) {
             if (imageList == null) {
                 CircularProgressIndicator()
             } else {
-                ImageList(imageList = imageList!!, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue })
+                ImageList(imageList = imageList!!, chosenId = chosenId, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue }, cId = { newValue -> chosenId = newValue })
             }
         }
     }
@@ -123,31 +124,35 @@ fun ImageListScreen(viewModel: MyViewModel) {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center,
         ) {
-            ImageList(imageList = imageList!!, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue })
+            ImageList(imageList = imageList!!, chosenId = chosenId, screenValue = screenValue, OnClick = { newValue -> screenValue = newValue }, cId = { newValue -> chosenId = newValue })
         }
     }
 }
 
 @Composable
-fun ImageList(imageList: List<BeerData>, screenValue: Int, OnClick: (Int) -> Unit) {
+fun ImageList(imageList: List<BeerData>, chosenId: Int, screenValue: State, OnClick: (State) -> Unit, cId: (Int) -> Unit) {
     LazyColumn {
         items(imageList) { beerData ->
-            ImageItem(beerData = beerData, screenValue = screenValue, OnClick = OnClick)
+            ImageItem(beerData = beerData, chosenId = chosenId, screenValue = screenValue, OnClick = OnClick, cId = cId)
         }
     }
 }
 
 @Composable
-fun ImageItem(beerData: BeerData, screenValue: Int, OnClick: (Int) -> Unit) {
+fun ImageItem(beerData: BeerData, chosenId: Int, screenValue: State, OnClick: (State) -> Unit, cId: (Int) -> Unit) {
     val painter = rememberImagePainter(beerData.image_url)
-    if (screenValue == 0 || (screenValue != 0 && beerData.id == screenValue)) {
+    if (screenValue == State.LIST || (screenValue != State.LIST && beerData.id == chosenId)) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(1f)
                 .padding(8.dp)
                 .border(1.dp, Color.Black, CircleShape)
-                .clickable { OnClick(beerData.id) }
+//                .clickable { OnClick(beerData.id) }
+                .clickable {
+                    OnClick(State.SINGLE)
+                    cId(beerData.id)
+                }
         ) {
             Image(
                 painter = painter,
@@ -155,9 +160,11 @@ fun ImageItem(beerData: BeerData, screenValue: Int, OnClick: (Int) -> Unit) {
                 modifier = Modifier.fillMaxSize(),
                 contentScale = ContentScale.Fit
             )
-            if (screenValue != 0) {
+            if (screenValue != State.LIST) {
                 IconButton(
-                    onClick = { OnClick(0) },
+                    onClick = {
+                        OnClick(State.LIST)
+                        cId(0) },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(8.dp)
